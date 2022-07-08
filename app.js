@@ -1,12 +1,9 @@
 const express = require('express');
 const bodyParser = require('body-parser');
-const date = require(__dirname + '/date.js');
+const mongoose = require('mongoose');
 
 const app = express();
 const port = 3000;
-
-const items = ['Buy Food', 'Cook Food', 'Eat Food'];
-const workItems = [];
 
 // setting our view engine to ejs
 app.set('view engine', 'ejs');
@@ -15,10 +12,48 @@ app.use(bodyParser.urlencoded({ extended: true }));
 // serve static files
 app.use(express.static('public'));
 
-app.get('/', function (req, res) {
 
-    let dateToday = date.getDate();
-    res.render('list', { listTitle: dateToday, items: items });
+// ! setting up mongoDB database
+// * connecting mongoose
+mongoose.connect('mongodb://localhost:27017/todolistDB');
+// * schema
+const itemsSchema = {
+    'name': String
+};
+
+// * mongoose model
+// * createing a mongoose model automatically 
+// * creates a DB and the collection in it.
+// mongoose.model(singularCollectionName, schema);
+const Item = mongoose.model('Item', itemsSchema);
+
+// ! adding default items in the DB
+// * mongoose document
+const item1 = new Item({
+    name: 'Learn Flutter',
+});
+
+const item2 = new Item({
+    name: 'Learn Data Structures',
+});
+
+const item3 = new Item({
+    name: 'Learn Algorithms',
+});
+
+const defaultItems = [item1, item2, item3];
+
+Item.insertMany(defaultItems, function(err) {
+    if (err) {
+        console.log(err);
+    } else {
+        console.log('Successfully added default items.');
+    }
+});
+
+
+app.get('/', function (req, res) {
+    res.render('list', { listTitle: 'Today', items: items });
 });
 
 app.get('/work', function (req, res) {
