@@ -76,15 +76,43 @@ app.get('/work', function (req, res) {
 
 app.post('/', function (req, res) {
 
-    let newItem = req.body.newItem;
+    const itemName = req.body.newItem;
 
-    if (req.body.list === 'Work') {
-        workItems.push(newItem);
-        res.redirect('/work');
-    } else {
-        items.push(newItem);
-        res.redirect('/');
-    }
+    const itemDoc = new Item({
+        name: itemName,
+    });
+
+    itemDoc.save(function (err) {
+        if (err) {
+            console.log(err);
+        } else {
+            res.redirect("/");
+        }
+    });
+
+    // if (req.body.list === 'Work') {
+    //     workItems.push(newItem);
+    //     res.redirect('/work');
+    // } else {
+    //     items.push(newItem);
+    //     res.redirect('/');
+    // }
+
+});
+
+app.post('/delete', function (req, res) {
+    // console.log(req.body.checkbox);
+    const item_id = req.body.checkbox;
+    
+    Item.findByIdAndRemove(item_id, function (err) {
+        if (err) {
+            console.log(`Item ${item_id} could NOT be deleted`);
+        } else {
+            console.log(`Item ${item_id} SUCCESSFULLY deleted`);
+        }
+    });
+
+    res.redirect('/');
 
 });
 
