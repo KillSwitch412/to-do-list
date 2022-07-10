@@ -1,6 +1,7 @@
 const express = require('express');
 const bodyParser = require('body-parser');
 const mongoose = require('mongoose');
+const ejs = require('ejs');
 
 const app = express();
 const port = 3000;
@@ -28,32 +29,45 @@ const itemsSchema = {
 const Item = mongoose.model('Item', itemsSchema);
 
 // ! adding default items in the DB
-// * mongoose document
-const item1 = new Item({
-    name: 'Learn Flutter',
-});
+function addDefaultItemsInDB() {
 
-const item2 = new Item({
-    name: 'Learn Data Structures',
-});
+    // * mongoose document
+    const item1 = new Item({
+        name: 'Learn Flutter',
+    });
+    
+    const item2 = new Item({
+        name: 'Learn Data Structures',
+    });
+    
+    const item3 = new Item({
+        name: 'Learn Algorithms',
+    });
+    
+    const defaultItems = [item1, item2, item3];
+    
+    Item.insertMany(defaultItems, function(err) {
+        if (err) {
+            console.log(err);
+        } else {
+            console.log('Successfully added default items.');
+        }
+    });
 
-const item3 = new Item({
-    name: 'Learn Algorithms',
-});
-
-const defaultItems = [item1, item2, item3];
-
-Item.insertMany(defaultItems, function(err) {
-    if (err) {
-        console.log(err);
-    } else {
-        console.log('Successfully added default items.');
-    }
-});
+}
 
 
 app.get('/', function (req, res) {
-    res.render('list', { listTitle: 'Today', items: items });
+
+    Item.find({}, function (err, result) {
+
+        if (result.length == 0) {
+            addDefaultItemsInDB();
+        }
+
+        res.render('list', { listTitle: 'Today', items: result });
+    });
+
 });
 
 app.get('/work', function (req, res) {
